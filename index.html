@@ -24,18 +24,30 @@
   <section class="tools">
 
     <article class="card">
-      <div class="card-icon">🗺️</div>
-      <h2>gen_route.py</h2>
+      <div class="card-icon">📍</div>
+      <h2>iPhone 定位控制台</h2>
       <p class="card-desc">
-        给定一串坐标点和速度（km/h），自动插值生成带精确时间戳的 GPX 轨迹文件。
-        原本是为配合 iOS 定位模拟工具做的，也可以单独当一个通用的
-        "坐标点 → 平滑 GPX 轨迹" 转换脚本用。
+        Windows 桌面小工具：用数据线连上 iPhone 后，在地图上点一下就能把手机定位
+        瞬间挪过去，或者用鼠标拖画一条自定义路线、设定速度，让手机按这条路径平滑
+        "移动"。基于开源项目
+        <a href="https://github.com/doronz88/pymobiledevice3" target="_blank" rel="noopener">pymobiledevice3</a>
+        实现，走的是苹果自己给开发者调试用的定位模拟协议，<strong>不需要越狱</strong>。
+      </p>
+      <p class="card-desc">
+        <strong>用途仅限：</strong>App 定位功能开发测试、个人隐私（不想被过度追踪定位）、
+        以及类似的正当个人用途。请勿用于欺骗他人、虚假打卡、地理围栏作弊等场景——
+        这类用途本身也大概率会被目标 App 的反作弊机制拦下。
+      </p>
+      <p class="card-desc">
+        <strong>使用前提：</strong>Windows 电脑 + iPhone 数据线；iPhone 建议开启
+        「设置 → 隐私与安全性 → 开发者模式」；首次连接需在手机上点"信任此电脑"。
       </p>
       <div class="card-meta">
-        <span class="tag">Python</span>
-        <span class="tag">GPX</span>
+        <span class="tag">Windows</span>
+        <span class="tag">iOS</span>
+        <span class="tag">开源依赖</span>
       </div>
-      <a class="btn" href="downloads/gen_route.py" download>下载脚本</a>
+      <a class="btn" href="downloads/iPhone定位控制台.exe" download>下载 exe（67.7 MB）</a>
     </article>
 
     <!-- 更多工具卡片按同样的结构往下加 -->

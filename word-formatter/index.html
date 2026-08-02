@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word 文档格式化助手（网页版）</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+<style>
+:root {
+  --bg: #f7f7f5; --bg-card: #ffffff; --text: #1a1a1a; --text-muted: #666;
+  --border: #e5e5e0; --accent: #3d5a80; --accent-bg: #eef2f7;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06); --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14151a; --bg-card: #1d1f26; --text: #ececec; --text-muted: #9a9a9a;
+    --border: #2a2c34; --accent: #8fb4d9; --accent-bg: #23303f;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  line-height: 1.6;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+a.back { color: var(--accent); text-decoration: none; font-size: 14px; }
+h1 { font-size: 22px; margin: 16px 0 6px; }
+.sub { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  padding: 10px 16px; border: none; background: none; color: var(--text-muted);
+  font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent;
+}
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.panel { display: none; }
+.panel.active { display: block; }
+.card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+}
+label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+textarea, input[type=file] {
+  width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px; font-size: 14px; font-family: inherit;
+}
+textarea { resize: vertical; }
+.btn {
+  display: inline-block; border: none; background: var(--accent); color: #fff;
+  padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; margin-top: 10px; margin-right: 8px;
+}
+.btn.secondary { background: var(--accent-bg); color: var(--accent); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.log {
+  background: #111; color: #ddd; border-radius: 8px; padding: 12px; font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap;
+  max-height: 320px; overflow-y: auto; margin-top: 12px; min-height: 40px;
+}
+.hint { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">&larr; 返回小工具箱</a>
+  <h1>📄 Word 文档格式化助手</h1>
+  <p class="sub">规则式关键词匹配，纯浏览器运行，不上传任何文件到服务器，不联网、不用 API Key。</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab1">格式化已有文档</button>
+    <button class="tab-btn" data-tab="tab2">AI 内容生成</button>
+  </div>
+
+  <div id="tab1" class="panel active">
+    <div class="card">
+      <label>选择 Word 文档 (.docx)</label>
+      <input type="file" id="fileInput" accept=".docx">
+    </div>
+    <div class="card">
+      <label>用一句话描述想要的格式（可以分号/逗号分隔多条）</label>
+      <textarea id="descBox" rows="5">正文字体改成宋体小四，行距1.5倍，段后间距6磅；
+一级标题字体黑体加粗居中蓝色；
+上边距2.5厘米，左右边距3厘米；
+加页码</textarea>
+      <button class="btn" id="applyBtn">应用格式</button>
+      <div class="log" id="log1"></div>
+    </div>
+  </div>
+
+  <div id="tab2" class="panel">
+    <div class="card">
+      <p class="hint" style="margin-top:0">复制提示词模板发给豆包（或其他 AI），把它的回复整段粘贴回来，直接生成排好版的 Word 文档。</p>
+      <button class="btn secondary" id="copyPromptBtn">复制提示词模板到剪贴板</button>
+    </div>
+    <div class="card">
+      <label>把 AI 的回复整段粘贴到这里</label>
+      <textarea id="aiInputBox" rows="10" placeholder="[标题]...[/标题] [一级标题]...[/一级标题] [正文]...[/正文] ..."></textarea>
+      <button class="btn" id="generateBtn">生成 Word 文档</button>
+      <div class="log" id="log2"></div>
+    </div>
+  </div>
+</div>
+
+<script src="jszip.min.js"></script>
+<script src="docx-engine.js"></script>
+<script>
+const PROMPT_TEMPLATE = `请严格按照下面的标签格式输出内容，标签必须完整闭合，标签之外不要写任何其他文字（不要有"好的，以下是内容"这类开场白或结束语）：
+
+[标题]这里替换成文档标题[/标题]
+[一级标题]这里替换成一级标题文字[/一级标题]
+[正文]这里替换成一段正文内容，如果是多段就每段单独用一对[正文]标签[/正文]
+[二级标题]这里替换成二级标题文字[/二级标题]
+[正文]另一段正文内容[/正文]
+
+（以上 标题/一级标题/二级标题/三级标题/正文 这几种标签可以按需要重复多次、任意顺序组合，不需要全部用到）
+
+[格式]
+用一句话描述整篇的格式要求，比如：正文宋体小四号，行距1.5倍；一级标题黑体加粗三号居中；二级标题黑体四号；上边距2.5厘米；加页码
+[/格式]
+
+===== 我的具体要求 =====
+题目/主题：（在这里写你的题目或主题）
+格式要求：（在这里写你想要的字体、字号、颜色、行距、页边距、页码等要求，没有特别要求可以不写）
+`;
+
+// ---- Tab 切换 ----
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+function log(el, text) { el.textContent += (el.textContent ? "\n" : "") + text; }
+function clearLog(el) { el.textContent = ""; }
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// ---- Tab 1：格式化已有文档 ----
+const log1 = document.getElementById("log1");
+document.getElementById("applyBtn").addEventListener("click", async () => {
+  clearLog(log1);
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+  if (!file) { log(log1, "请先选择一个 .docx 文件。"); return; }
+  if (file.size === 0) {
+    log(log1, "!! 这个文件是空的（0 字节），还不是一个真正的 Word 文档。");
+    log(log1, "   常见原因：右键新建的 Word 文档要用 Word 真正打开保存过一次才是有效文件。");
+    return;
+  }
+  const description = document.getElementById("descBox").value.trim();
+  if (!description) { log(log1, "请描述一下想要的格式。"); return; }
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const { blob, log: applyLog, parsed } = await formatExistingDocx(arrayBuffer, description);
+
+    log(log1, "=== 识别到的操作 ===");
+    if (parsed.operations.length === 0 && parsed.marginOps.length === 0 && !parsed.addPageNumber) {
+      log(log1, "（一条都没识别到，试试参考文本框里的示例格式来描述）");
+    }
+    for (const op of parsed.operations) log(log1, `  [${op.targetLabel}] ${op.kind} = ${op.value}   (来自：${op.raw})`);
+    for (const [side, cm] of parsed.marginOps) log(log1, `  [页边距] ${side} = ${cm} cm`);
+    if (parsed.addPageNumber) log(log1, "  [页码] 已识别，将添加");
+    if (parsed.unmatched.length) {
+      log(log1, "");
+      log(log1, "=== 没有识别出来的描述（不会生效）===");
+      for (const u of parsed.unmatched) log(log1, "  - " + u);
+    }
+    log(log1, "");
+    log(log1, "=== 应用结果 ===");
+    for (const line of applyLog) log(log1, "  " + line);
+
+    const outName = file.name.replace(/\.docx$/i, "") + "_已格式化.docx";
+    downloadBlob(blob, outName);
+    log(log1, "");
+    log(log1, "已下载：" + outName);
+  } catch (e) {
+    log(log1, "处理时出错：" + e.message);
+    console.error(e);
+  }
+});
+
+// ---- Tab 2：AI 内容生成 ----
+const log2 = document.getElementById("log2");
+
+document.getElementById("copyPromptBtn").addEventListener("click", async () => {
+  await navigator.clipboard.writeText(PROMPT_TEMPLATE);
+  alert("提示词模板已复制到剪贴板，粘贴给豆包之前记得先填写你的题目和格式要求。");
+});
+
+document.getElementById("generateBtn").addEventListener("click", async () => {
+  clearLog(log2);
+  const text = document.getElementById("aiInputBox").value.trim();
+  if (!text) { log(log2, "请先把 AI 的回复粘贴到输入框里。"); return; }
+
+  try {
+    const resp = await fetch("blank-template.docx");
+    const templateBuffer = await resp.arrayBuffer();
+
+    const { blob, log: applyLog, aiResult } = await generateFromAiOutput(text, templateBuffer);
+
+    log(log2, "=== 识别到的内容结构 ===");
+    if (aiResult.blocks.length === 0) {
+      log(log2, "!! 一个内容标签都没识别到。请确认粘贴的是 AI 按模板输出的完整回复。");
+      return;
+    }
+    for (const [style, t] of aiResult.blocks) {
+      const preview = t.length <= 30 ? t : t.slice(0, 30) + "...";
+      log(log2, `  [${style}] ${preview}`);
+    }
+    if (!aiResult.formatText) {
+      log(log2, "");
+      log(log2, "（没有识别到 [格式] 标签，将使用 Word 默认格式）");
+    }
+    if (aiResult.leftover) {
+      log(log2, "");
+      log(log2, "=== 标签之外、被忽略的文字 ===");
+      const preview = aiResult.leftover.length <= 200 ? aiResult.leftover : aiResult.leftover.slice(0, 200) + "...";
+      log(log2, "  " + preview.replace(/\n/g, "\n  "));
+    }
+    if (applyLog.length) {
+      log(log2, "");
+      log(log2, "=== 格式应用结果 ===");
+      for (const line of applyLog) log(log2, "  " + line);
+    }
+    if (aiResult.formatUnmatched && aiResult.formatUnmatched.length) {
+      log(log2, "");
+      log(log2, "=== [格式] 里没识别出来的描述 ===");
+      for (const u of aiResult.formatUnmatched) log(log2, "  - " + u);
+    }
+
+    const titleBlock = aiResult.blocks.find(b => b[0] === "Title");
+    const safeName = (titleBlock ? titleBlock[1] : "AI生成文档").replace(/[\\/:*?"<>|]/g, "").slice(0, 40) || "AI生成文档";
+    downloadBlob(blob, safeName + ".docx");
+    log(log2, "");
+    log(log2, "已下载：" + safeName + ".docx");
+  } catch (e) {
+    log(log2, "生成文档时出错：" + e.message);
+    console.error(e);
+  }
+});
+</script>
+</body>
+</html>

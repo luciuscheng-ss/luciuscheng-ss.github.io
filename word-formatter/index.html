@@ -68,11 +68,24 @@ textarea { resize: vertical; }
   <p class="sub">规则式关键词匹配，纯浏览器运行，不上传任何文件到服务器，不联网、不用 API Key。</p>
 
   <div class="tabs">
-    <button class="tab-btn active" data-tab="tab1">格式化已有文档</button>
-    <button class="tab-btn" data-tab="tab2">AI 内容生成</button>
+    <button class="tab-btn active" data-tab="tab2">AI 内容生成</button>
+    <button class="tab-btn" data-tab="tab1">格式化已有文档</button>
   </div>
 
-  <div id="tab1" class="panel active">
+  <div id="tab2" class="panel active">
+    <div class="card">
+      <p class="hint" style="margin-top:0">复制提示词模板发给豆包（或其他 AI），把它的回复整段粘贴回来，直接生成排好版的 Word 文档。</p>
+      <button class="btn secondary" id="copyPromptBtn">复制提示词模板到剪贴板</button>
+    </div>
+    <div class="card">
+      <label>把 AI 的回复整段粘贴到这里</label>
+      <textarea id="aiInputBox" rows="10" placeholder="[标题]...[/标题] [一级标题]...[/一级标题] [正文]...[/正文] ..."></textarea>
+      <button class="btn" id="generateBtn">生成 Word 文档</button>
+      <div class="log" id="log2"></div>
+    </div>
+  </div>
+
+  <div id="tab1" class="panel">
     <div class="card">
       <label>选择 Word 文档 (.docx)</label>
       <input type="file" id="fileInput" accept=".docx">
@@ -85,19 +98,6 @@ textarea { resize: vertical; }
 加页码</textarea>
       <button class="btn" id="applyBtn">应用格式</button>
       <div class="log" id="log1"></div>
-    </div>
-  </div>
-
-  <div id="tab2" class="panel">
-    <div class="card">
-      <p class="hint" style="margin-top:0">复制提示词模板发给豆包（或其他 AI），把它的回复整段粘贴回来，直接生成排好版的 Word 文档。</p>
-      <button class="btn secondary" id="copyPromptBtn">复制提示词模板到剪贴板</button>
-    </div>
-    <div class="card">
-      <label>把 AI 的回复整段粘贴到这里</label>
-      <textarea id="aiInputBox" rows="10" placeholder="[标题]...[/标题] [一级标题]...[/一级标题] [正文]...[/正文] ..."></textarea>
-      <button class="btn" id="generateBtn">生成 Word 文档</button>
-      <div class="log" id="log2"></div>
     </div>
   </div>
 </div>

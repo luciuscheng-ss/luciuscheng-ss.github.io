@@ -16,7 +16,6 @@
     <div class="hero-links">
       <a href="https://github.com/luciuscheng-ss" target="_blank" rel="noopener">GitHub</a>
       <button id="copyLinkBtn" class="link-btn">🔗 复制链接</button>
-      <a id="qqShareBtn" href="#" target="_blank" rel="noopener">分享到 QQ</a>
     </div>
   </div>
 </header>
@@ -111,12 +110,6 @@ document.getElementById("copyLinkBtn").addEventListener("click", async () => {
     prompt("复制失败，请手动复制这个链接：", location.href);
   }
 });
-
-const qqShareBtn = document.getElementById("qqShareBtn");
-const pageUrl = encodeURIComponent(location.href);
-const pageTitle = encodeURIComponent(document.title);
-const pageDesc = encodeURIComponent("自己写的一些小工具，分享给你");
-qqShareBtn.href = `https://connect.qq.com/widget/shareqq/index.html?url=${pageUrl}&title=${pageTitle}&source=${pageTitle}&desc=${pageDesc}`;
 </script>
 
 </body>

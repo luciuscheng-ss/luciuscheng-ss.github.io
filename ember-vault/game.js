@@ -485,6 +485,230 @@ function snapshot(s) {
   return { mode: s.mode, hp: s.hero.hp, stamina: s.hero.stamina, kills: s.kills, cells: s.cells, time: s.time, zone: s.hero.x < 1800 ? "\u9057\u5FD8\u6C34\u7262" : s.hero.x < 3600 ? "\u6C89\u949F\u56DE\u5ECA" : "\u9501\u72F1\u5927\u5385", boss: s.bossAwake ? e.hp : 0, bossMax: e.maxHp, flasks: s.hero.flasks, hint: s.hint, combo: s.hero.combo, progress: s.hero.x / WIDTH, weapon: s.hero.weapon, weaponName: w.name, weaponStyle: w.style, sprinting: s.hero.sprinting };
 }
 
+// app/game/knight.ts
+function maskAtlas(data, width, height) {
+  const visited = new Uint8Array(width * height), queue = new Int32Array(width * height);
+  let tail = 0;
+  function push(n) {
+    if (visited[n]) return;
+    const k = n * 4, r = data[k], g = data[k + 1], b = data[k + 2];
+    if (data[k + 3] === 0 || Math.min(r, g, b) > 192 && Math.max(r, g, b) - Math.min(r, g, b) < 18) {
+      visited[n] = 1;
+      queue[tail++] = n;
+    }
+  }
+  for (let row = 0; row <= 3; row++) {
+    const y = Math.min(height - 1, Math.floor(row * height / 3));
+    for (let x = 0; x < width; x++) push(y * width + x);
+  }
+  for (let col = 0; col <= 4; col++) {
+    const x = Math.min(width - 1, Math.floor(col * width / 4));
+    for (let y = 0; y < height; y++) push(y * width + x);
+  }
+  for (let head = 0; head < tail; head++) {
+    const n = queue[head], x = n % width, y = Math.floor(n / width);
+    data[n * 4 + 3] = 0;
+    if (x) push(n - 1);
+    if (x < width - 1) push(n + 1);
+    if (y) push(n - width);
+    if (y < height - 1) push(n + width);
+  }
+  const parts = [];
+  for (let id = 0; id < 12; id++) {
+    const left = Math.floor(id % 4 * width / 4), top = Math.floor(Math.floor(id / 4) * height / 3), right = Math.floor((id % 4 + 1) * width / 4), bottom = Math.floor((Math.floor(id / 4) + 1) * height / 3);
+    let x0 = right, y0 = bottom, x1 = left, y1 = top;
+    const cropRight = id === 2 ? left + Math.floor(width / 4 * 0.78) : right;
+    for (let y = top; y < bottom; y++) for (let x = left; x < cropRight; x++) if (data[(y * width + x) * 4 + 3] > 0) {
+      x0 = Math.min(x0, x);
+      y0 = Math.min(y0, y);
+      x1 = Math.max(x1, x);
+      y1 = Math.max(y1, y);
+    }
+    parts.push(x1 >= x0 && y1 >= y0 ? { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 } : { x: left, y: top, w: right - left, h: bottom - top });
+  }
+  return parts;
+}
+function prepareKnightTexture(image) {
+  const canvas = document.createElement("canvas");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("\u65E0\u6CD5\u51C6\u5907\u89D2\u8272\u7EB9\u7406");
+  ctx.drawImage(image, 0, 0);
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const parts = maskAtlas(pixels.data, canvas.width, canvas.height);
+  ctx.putImageData(pixels, 0, 0);
+  return { canvas, parts };
+}
+var mix = (a, b, t) => a + (b - a) * t;
+var point = (a, b, t) => [mix(a[0], b[0], t), mix(a[1], b[1], t)];
+var smooth = (t) => t * t * (3 - 2 * t);
+var rad = (a) => a * Math.PI / 180;
+function foot(phase, sprint) {
+  const t = (phase % 1 + 1) % 1, stance = sprint ? 0.43 : 0.54, span = sprint ? 19 : 14;
+  if (t < stance) return [mix(span, -span, t / stance), 0];
+  const u = (t - stance) / (1 - stance);
+  return [mix(-span, span, smooth(u)), -Math.sin(Math.PI * u) * (sprint ? 25 : 18)];
+}
+function knightPose(m) {
+  const p = { root: [0, -42], lean: 1, feet: [[-9, 0], [10, 0]], hands: [[-7, -39], [14, -39]], angle: m.weapon === "spear" ? -9 : 27, cape: 0, rotation: 0 };
+  const a = m.animation, t = m.time;
+  if (a === "idle") {
+    const bob = Math.sin(t * 3) * 0.6;
+    p.root[1] += bob;
+    p.hands[1][1] += bob;
+    p.cape = Math.sin(t * 2) * 2;
+  }
+  if (a === "run" || a === "sprint") {
+    const fast = a === "sprint", phase = m.gait * Math.PI * 2;
+    p.root = [0, -39 + Math.cos(phase * 2) * 1.6];
+    p.lean = fast ? 16 : 8;
+    p.feet = [foot(m.gait + 0.5, fast), foot(m.gait, fast)];
+    p.hands = [[8 + Math.cos(phase) * 11, -49 - Math.sin(phase) * 8], [7 - Math.cos(phase) * 10, -44 + Math.sin(phase) * 7]];
+    p.angle = fast ? 150 + Math.cos(phase) * 8 : 27 + Math.cos(phase) * 12;
+    p.cape = 25 + Math.sin(phase - 0.7) * 5;
+    if (m.weapon !== "sword") p.angle = fast ? -12 : 20;
+  }
+  if (a === "brake" || a === "land") {
+    const k = 1 - Math.min(1, t / (a === "brake" ? 0.15 : 0.13));
+    p.root = [-k * 3, -42 + k * 8];
+    p.lean = a === "brake" ? -9 * k : 7 * k;
+    p.feet = [[-15, 0], [19, 0]];
+    p.hands = [[-9, -41], [15, -36]];
+    p.angle = 15;
+    p.cape = a === "brake" ? -95 * k : 9 * k;
+  }
+  if (a === "jump" || a === "fall") {
+    p.root = [0, -43];
+    p.lean = 5;
+    p.feet = a === "jump" ? [[-13, -10], [16, -21]] : [[-11, -2], [13, -7]];
+    p.hands = [[-9, -56], [17, -49]];
+    p.angle = a === "jump" ? -55 : 35;
+    p.cape = a === "jump" ? 18 : -36;
+  }
+  if (a.startsWith("attack")) {
+    const w = WEAPONS[m.weapon], u = Math.max(0, Math.min(1, m.progress));
+    const upper = m.combo === 2;
+    const wind = { hand: [0, upper ? -37 : -73], angle: upper ? 155 : -145, lean: -7, root: [0, -37] };
+    const hit = { hand: [33, upper ? -61 : -38], angle: upper ? -48 : 47, lean: 15, root: [5, -34] };
+    if (m.weapon === "spear") {
+      wind.hand = [-7, -48];
+      wind.angle = -5;
+      hit.hand = [34, -49];
+      hit.angle = -5;
+    }
+    if (m.weapon === "hammer") {
+      wind.hand = [-2, -72];
+      wind.angle = -120;
+      hit.hand = [30, -32];
+      hit.angle = 62;
+      hit.root = [5, -32];
+    }
+    if (m.combo === 3 && m.weapon === "sword") {
+      wind.hand = [-2, -76];
+      wind.angle = -120;
+      hit.hand = [32, -34];
+      hit.angle = 62;
+    }
+    const rest = { hand: [14, -39], angle: m.weapon === "spear" ? -9 : 27, lean: 1, root: [0, -42] };
+    const keys = [{ t: 0, v: rest }, { t: w.active[0] * 0.45, v: wind }, { t: w.active[0] - 0.09, v: wind }, { t: w.active[0], v: hit }, { t: w.active[1] + 0.03, v: hit }, { t: 1, v: rest }];
+    for (let i = 1; i < keys.length; i++) if (u <= keys[i].t) {
+      const left = keys[i - 1], right = keys[i], q = smooth((u - left.t) / (right.t - left.t));
+      p.hands[1] = point(left.v.hand, right.v.hand, q);
+      p.angle = mix(left.v.angle, right.v.angle, q);
+      p.lean = mix(left.v.lean, right.v.lean, q);
+      p.root = point(left.v.root, right.v.root, q);
+      break;
+    }
+    p.feet = [[-19, 0], [22, 0]];
+    p.cape = 15 + Math.max(0, p.lean) * 1.2;
+    const grip = rad(p.angle);
+    p.hands[0] = [p.hands[1][0] - Math.cos(grip) * 6, p.hands[1][1] - Math.sin(grip) * 6];
+  }
+  if (a === "roll") {
+    p.root = [0, -25];
+    p.lean = 8;
+    p.feet = [[-7, -6], [13, -11]];
+    p.hands = [[7, -33], [17, -32]];
+    p.angle = 165;
+    p.rotation = m.progress * Math.PI * 2;
+    p.cape = -20;
+  }
+  if (a === "hurt") {
+    p.lean = -11;
+    p.hands = [[-14, -47], [8, -47]];
+    p.angle = 70;
+    p.cape = 17;
+  }
+  if (a === "death") {
+    const q = Math.min(1, t * 2.8);
+    p.rotation = -q * Math.PI * 0.48;
+    p.root = [0, -42];
+    p.cape = 20;
+  }
+  return p;
+}
+function solveLimb(start, target, a, b, bend) {
+  const dx = target[0] - start[0], dy = target[1] - start[1], raw = Math.hypot(dx, dy), d = Math.max(0.01, Math.min(a + b - 0.01, raw));
+  const angle = Math.atan2(dy, dx), q = angle + bend * Math.acos(Math.max(-1, Math.min(1, (a * a + d * d - b * b) / (2 * a * d))));
+  return [[start[0] + Math.cos(q) * a, start[1] + Math.sin(q) * a], [start[0] + Math.cos(angle) * d, start[1] + Math.sin(angle) * d]];
+}
+function drawKnight(c, image, parts, x, y, dir, m, alpha = 1) {
+  const p = knightPose(m), root = p.root, shoulder = [root[0] + p.lean, root[1] - 21];
+  function part(id2, at, width2, height, angle = 0, px = 0.5, py = 0.5) {
+    const r = parts[id2];
+    if (!r) return;
+    c.save();
+    c.translate(at[0], at[1]);
+    c.rotate(angle);
+    c.drawImage(image, r.x, r.y, r.w, r.h, -width2 * px, -height * py, width2, height);
+    c.restore();
+  }
+  function segment(id2, a, b, width2) {
+    const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    part(id2, point(a, b, 0.5), width2, length + 4, Math.atan2(b[1] - a[1], b[0] - a[0]) - Math.PI / 2);
+  }
+  function leg(rear) {
+    const start = [root[0] + (rear ? -4 : 4), root[1]], target2 = p.feet[rear ? 0 : 1], [knee, end] = solveLimb(start, target2, 23, 22, -1);
+    segment(6, start, knee, 10);
+    segment(7, knee, end, 8);
+    part(8, [end[0] + 3, end[1] - 2], 14, 7);
+  }
+  const armStart = [shoulder[0] + 4, shoulder[1] + 1];
+  const [elbow, hand] = solveLimb(armStart, p.hands[1], 16, 18, 1);
+  c.save();
+  c.translate(Math.round(x), Math.round(y));
+  c.scale(dir, 1);
+  c.globalAlpha = alpha;
+  if (p.rotation) {
+    c.translate(0, -23);
+    c.rotate(p.rotation);
+    c.translate(0, 23);
+    if (m.animation === "death") c.translate(0, 16);
+  }
+  part(3, [shoulder[0] - 6, shoulder[1] - 5], 48, 43, rad(p.cape), 0.91, 0.12);
+  c.save();
+  c.globalAlpha *= 0.63;
+  leg(true);
+  const back = [shoulder[0] - 5, shoulder[1] + 1], target = m.animation.startsWith("attack") ? [hand[0] - Math.cos(rad(p.angle)) * 6, hand[1] - Math.sin(rad(p.angle)) * 6] : p.hands[0];
+  const [e, h] = solveLimb(back, target, 17, 19, -1);
+  segment(4, back, e, 12);
+  segment(5, e, h, 10);
+  c.restore();
+  leg(false);
+  part(2, [root[0], root[1] + 1], 18, 16);
+  part(1, point(root, shoulder, 0.57), 23, 27, Math.atan2(shoulder[1] - root[1], shoulder[0] - root[0]) + Math.PI / 2);
+  part(0, [shoulder[0] + 3, shoulder[1] - 11], 14, 18, rad(p.lean * 0.42));
+  const id = m.weapon === "sword" ? 9 : m.weapon === "spear" ? 10 : 11;
+  const width = m.weapon === "spear" ? 118 : m.weapon === "hammer" ? 64 : 70;
+  const grounded = !["roll", "jump", "fall", "death"].includes(m.animation);
+  const weaponAngle = grounded && p.angle > 0 && p.angle < 90 ? Math.min(rad(p.angle), Math.asin(Math.min(1, Math.max(0, -hand[1] - 3) / (width * 0.84)))) : rad(p.angle);
+  part(id, hand, width, m.weapon === "hammer" ? 27 : m.weapon === "spear" ? 13 : 12, weaponAngle, m.weapon === "spear" ? 0.29 : 0.16, 0.5);
+  segment(4, armStart, elbow, 11);
+  segment(5, elbow, hand, 8);
+  c.restore();
+}
+
 // app/game/renderer.ts
 var clamp2 = (n, a, b) => Math.max(a, Math.min(b, n));
 var KEYMAP = { KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right", KeyS: "down", ArrowDown: "down", Space: "jump", KeyW: "jump", ArrowUp: "jump", KeyJ: "attack", KeyK: "roll", ShiftLeft: "sprint", ShiftRight: "sprint", KeyQ: "heal", KeyE: "interact", Escape: "togglePause", KeyP: "togglePause", Enter: "start" };
@@ -570,7 +794,10 @@ function createGame(canvas, onState, onError) {
   const assetBase = (globalThis.__EMBER_ASSET_BASE__ ?? "/assets").replace(/\/$/, "");
   const images = {};
   let definitions = {};
+  let knightParts = [];
+  let knightTexture;
   let alive = true, ready = false, raf = 0, last = 0, accumulator = 0, lastNotify = 0, realTime = 0, camera = 0, viewW = 960;
+  let deathTime = 0;
   const toolLifecycle = new AbortController();
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function notify() {
@@ -606,6 +833,10 @@ function createGame(canvas, onState, onError) {
       if (!response.ok) throw new Error("\u89D2\u8272\u7D20\u6750\u672A\u80FD\u8F7D\u5165\u3002");
       const data = await response.json();
       definitions = data.entities;
+      await loadImage("knight", assetBase + "/characters/knight-parts.png");
+      const prepared = prepareKnightTexture(images.knight);
+      knightTexture = prepared.canvas;
+      knightParts = prepared.parts;
       await Promise.all([...Object.entries(definitions).map(([key, d]) => loadImage(key, assetBase + "/characters/" + d.image)), ...["sword", "spear", "hammer"].map((key) => loadImage("weapon_" + key, assetBase + "/characters/weapon-" + key + ".png")), ...["far", "mid", "near", "tiles", "banner"].map((key) => loadImage(key, assetBase + "/environment/" + key + ".png"))]);
       if (!alive) return;
       ready = true;
@@ -919,17 +1150,16 @@ function createGame(canvas, onState, onError) {
       c.fillStyle = "#a3ffe5";
       c.fillRect(Math.round(d.x) - 2, Math.round(d.y) - 3, 4, 6);
     }
-    for (const g of s.ghosts) if (!reduced) sprite(WEAPONS[g.weapon].sprite, g.x, g.y, g.dir, g.anim, g.animTime, 1.65, g.life * 1.4, g.frame);
+    for (const g of s.ghosts) if (!reduced) drawKnight(c, knightTexture, knightParts, g.x, g.y, g.dir, { animation: g.anim, time: g.animTime, gait: g.frame / 16, progress: g.frame / 8, weapon: g.weapon, combo: 1 }, g.life * 1.1);
     const h = s.hero;
     const hx = s.mode === "title" ? camera + viewW * 0.72 : h.x;
     c.fillStyle = "#05101799";
     c.beginPath();
     c.ellipse(hx, Math.min(GROUND, h.y + 2), 24, 5, 0, 0, Math.PI * 2);
     c.fill();
-    const heroKind = WEAPONS[h.weapon].sprite;
-    const frame = h.attack > 0 ? Math.floor((1 - h.attack / h.attackTotal) * (definitions[heroKind]?.animations["attack" + h.combo]?.frames || 10)) : h.roll > 0 ? Math.floor((1 - h.roll / 0.34) * 8) : s.mode === "dead" ? 5 : h.anim === "run" || h.anim === "sprint" ? Math.floor(h.gait * 16) % 16 : void 0;
     const opacity = h.invuln > 0 && h.roll <= 0 && Math.floor(realTime * 18) % 2 === 0 ? 0.5 : 1;
-    sprite(heroKind, hx, h.y, h.dir, s.mode === "title" ? "idle" : h.anim, s.mode === "title" ? realTime : h.animTime, 1.65, opacity, frame);
+    const motion = { animation: s.mode === "dead" ? "death" : s.mode === "title" ? "idle" : h.anim, time: s.mode === "dead" ? deathTime : s.mode === "title" ? realTime : h.animTime, gait: h.gait, progress: h.attack > 0 ? 1 - h.attack / h.attackTotal : h.roll > 0 ? 1 - h.roll / 0.34 : 0, weapon: h.weapon, combo: h.combo || 1 };
+    drawKnight(c, knightTexture, knightParts, hx, h.y, h.dir, motion, opacity);
     if (h.attack > 0) heroStrike();
     for (const impact of s.impacts) {
       const max = impact.weapon === "hammer" ? 0.24 : 0.16, t = 1 - impact.life / max, r = (impact.weapon === "hammer" ? 43 : 29) * (1 + t * 0.5);
@@ -1005,6 +1235,7 @@ function createGame(canvas, onState, onError) {
     const dt = Math.min(0.08, (ms - last) / 1e3 || 0);
     last = ms;
     if (s.mode === "playing" || s.mode === "title") realTime += dt;
+    deathTime = s.mode === "dead" ? deathTime + dt : 0;
     if (ready) {
       accumulator += dt;
       if (s.mode !== "playing") accumulator = 0;

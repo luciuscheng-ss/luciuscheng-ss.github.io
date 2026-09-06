@@ -1,0 +1,386 @@
+{
+  "version": 2,
+  "license": "Original project assets; generated procedurally for this game.",
+  "rendering": "Use nearest-neighbor sampling. Crop source frame as x=frame*frameWidth, y=animation.row*frameHeight.",
+  "placement": "Draw at worldX-anchorX*scale, worldY-anchorY*scale. Mirror around the anchor for left-facing characters.",
+  "entities": {
+    "hero": {
+      "image": "hero-sword-v2.png",
+      "frameWidth": 144,
+      "frameHeight": 112,
+      "anchorX": 64,
+      "anchorY": 84,
+      "animations": {
+        "idle": {
+          "row": 0,
+          "frames": 8,
+          "fps": 8,
+          "loop": true
+        },
+        "run": {
+          "row": 1,
+          "frames": 16,
+          "fps": 40,
+          "loop": true
+        },
+        "sprint": {
+          "row": 2,
+          "frames": 16,
+          "fps": 52,
+          "loop": true
+        },
+        "jump": {
+          "row": 3,
+          "frames": 2,
+          "fps": 9,
+          "loop": false
+        },
+        "fall": {
+          "row": 4,
+          "frames": 2,
+          "fps": 7,
+          "loop": true
+        },
+        "land": {
+          "row": 5,
+          "frames": 4,
+          "fps": 28,
+          "loop": false
+        },
+        "brake": {
+          "row": 6,
+          "frames": 4,
+          "fps": 24,
+          "loop": false
+        },
+        "attack1": {
+          "row": 7,
+          "frames": 10,
+          "fps": 26,
+          "loop": false
+        },
+        "attack2": {
+          "row": 8,
+          "frames": 10,
+          "fps": 26,
+          "loop": false
+        },
+        "attack3": {
+          "row": 9,
+          "frames": 12,
+          "fps": 24,
+          "loop": false
+        },
+        "roll": {
+          "row": 10,
+          "frames": 8,
+          "fps": 24,
+          "loop": false
+        },
+        "hurt": {
+          "row": 11,
+          "frames": 2,
+          "fps": 10,
+          "loop": false
+        },
+        "death": {
+          "row": 12,
+          "frames": 6,
+          "fps": 9,
+          "loop": false
+        }
+      },
+      "facing": "right",
+      "pixelArt": true
+    },
+    "guard": {
+      "image": "guard-atlas.png",
+      "frameWidth": 96,
+      "frameHeight": 80,
+      "anchorX": 48,
+      "anchorY": 66,
+      "animations": {
+        "idle": {
+          "row": 0,
+          "frames": 6,
+          "fps": 6,
+          "loop": true
+        },
+        "run": {
+          "row": 1,
+          "frames": 8,
+          "fps": 9,
+          "loop": true
+        },
+        "attack": {
+          "row": 2,
+          "frames": 6,
+          "fps": 11,
+          "loop": false
+        },
+        "hurt": {
+          "row": 3,
+          "frames": 2,
+          "fps": 8,
+          "loop": false
+        },
+        "death": {
+          "row": 4,
+          "frames": 6,
+          "fps": 7,
+          "loop": false
+        }
+      },
+      "facing": "right",
+      "pixelArt": true
+    },
+    "wisp": {
+      "image": "wisp-atlas.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "anchorX": 32,
+      "anchorY": 48,
+      "animations": {
+        "idle": {
+          "row": 0,
+          "frames": 6,
+          "fps": 7,
+          "loop": true
+        },
+        "attack": {
+          "row": 1,
+          "frames": 6,
+          "fps": 12,
+          "loop": false
+        },
+        "death": {
+          "row": 2,
+          "frames": 6,
+          "fps": 11,
+          "loop": false
+        }
+      },
+      "facing": "right",
+      "pixelArt": true
+    },
+    "boss": {
+      "image": "boss-atlas.png",
+      "frameWidth": 128,
+      "frameHeight": 112,
+      "anchorX": 64,
+      "anchorY": 98,
+      "animations": {
+        "idle": {
+          "row": 0,
+          "frames": 6,
+          "fps": 6,
+          "loop": true
+        },
+        "run": {
+          "row": 1,
+          "frames": 8,
+          "fps": 9,
+          "loop": true
+        },
+        "attack": {
+          "row": 2,
+          "frames": 6,
+          "fps": 11,
+          "loop": false
+        },
+        "hurt": {
+          "row": 3,
+          "frames": 2,
+          "fps": 8,
+          "loop": false
+        },
+        "death": {
+          "row": 4,
+          "frames": 6,
+          "fps": 7,
+          "loop": false
+        }
+      },
+      "facing": "right",
+      "pixelArt": true
+    },
+    "hero_spear": {
+      "image": "hero-spear-v2.png",
+      "frameWidth": 144,
+      "frameHeight": 112,
+      "anchorX": 64,
+      "anchorY": 84,
+      "animations": {
+        "idle": {
+          "row": 0,
+          "frames": 8,
+          "fps": 8,
+          "loop": true
+        },
+        "run": {
+          "row": 1,
+          "frames": 16,
+          "fps": 40,
+          "loop": true
+        },
+        "sprint": {
+          "row": 2,
+          "frames": 16,
+          "fps": 52,
+          "loop": true
+        },
+        "jump": {
+          "row": 3,
+          "frames": 2,
+          "fps": 9,
+          "loop": false
+        },
+        "fall": {
+          "row": 4,
+          "frames": 2,
+          "fps": 7,
+          "loop": true
+        },
+        "land": {
+          "row": 5,
+          "frames": 4,
+          "fps": 28,
+          "loop": false
+        },
+        "brake": {
+          "row": 6,
+          "frames": 4,
+          "fps": 24,
+          "loop": false
+        },
+        "attack1": {
+          "row": 7,
+          "frames": 10,
+          "fps": 26,
+          "loop": false
+        },
+        "attack2": {
+          "row": 8,
+          "frames": 10,
+          "fps": 26,
+          "loop": false
+        },
+        "attack3": {
+          "row": 9,
+          "frames": 12,
+          "fps": 24,
+          "loop": false
+        },
+        "roll": {
+          "row": 10,
+          "frames": 8,
+          "fps": 24,
+          "loop": false
+        },
+        "hurt": {
+          "row": 11,
+          "frames": 2,
+          "fps": 10,
+          "loop": false
+        },
+        "death": {
+          "row": 12,
+          "frames": 6,
+          "fps": 9,
+          "loop": false
+        }
+      },
+      "facing": "right",
+      "pixelArt": true
+    },
+    "hero_hammer": {
+      "image": "hero-hammer-v2.png",
+      "frameWidth": 144,
+      "frameHeight": 112,
+      "anchorX": 64,
+      "anchorY": 84,
+      "animations": {
+        "idle": {
+          "row": 0,
+          "frames": 8,
+          "fps": 8,
+          "loop": true
+        },
+        "run": {
+          "row": 1,
+          "frames": 16,
+          "fps": 40,
+          "loop": true
+        },
+        "sprint": {
+          "row": 2,
+          "frames": 16,
+          "fps": 52,
+          "loop": true
+        },
+        "jump": {
+          "row": 3,
+          "frames": 2,
+          "fps": 9,
+          "loop": false
+        },
+        "fall": {
+          "row": 4,
+          "frames": 2,
+          "fps": 7,
+          "loop": true
+        },
+        "land": {
+          "row": 5,
+          "frames": 4,
+          "fps": 28,
+          "loop": false
+        },
+        "brake": {
+          "row": 6,
+          "frames": 4,
+          "fps": 24,
+          "loop": false
+        },
+        "attack1": {
+          "row": 7,
+          "frames": 10,
+          "fps": 26,
+          "loop": false
+        },
+        "attack2": {
+          "row": 8,
+          "frames": 10,
+          "fps": 26,
+          "loop": false
+        },
+        "attack3": {
+          "row": 9,
+          "frames": 12,
+          "fps": 24,
+          "loop": false
+        },
+        "roll": {
+          "row": 10,
+          "frames": 8,
+          "fps": 24,
+          "loop": false
+        },
+        "hurt": {
+          "row": 11,
+          "frames": 2,
+          "fps": 10,
+          "loop": false
+        },
+        "death": {
+          "row": 12,
+          "frames": 6,
+          "fps": 9,
+          "loop": false
+        }
+      },
+      "facing": "right",
+      "pixelArt": true
+    }
+  }
+}

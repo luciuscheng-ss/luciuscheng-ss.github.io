@@ -1,0 +1,173 @@
+{
+  "title": "Ember Vault \u2014 original pixel environment",
+  "artist_note": "Procedural pixel geometry, authored palette and shape placement. Original artwork.",
+  "native_layer_size": [
+    1024,
+    360
+  ],
+  "seamless_axis": "x",
+  "sampling": "nearest-neighbor",
+  "recommended_render_scale": 2,
+  "layers": [
+    {
+      "file": "far.png",
+      "opaque": true,
+      "suggested_scroll_factor": 0.1,
+      "description": "Teal moon, layered citadel silhouettes, calm haze"
+    },
+    {
+      "file": "mid.png",
+      "opaque": false,
+      "suggested_scroll_factor": 0.28,
+      "description": "Eight repeating Gothic aqueduct arches"
+    },
+    {
+      "file": "near.png",
+      "opaque": false,
+      "suggested_scroll_factor": 0.65,
+      "description": "Sparse pillars, chains, copper lanterns; most pixels transparent"
+    }
+  ],
+  "atlas": {
+    "file": "tiles.png",
+    "tile_size": 16,
+    "columns": 8,
+    "rows": 4,
+    "tiles": {
+      "floor_top_0": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16,
+        "role": "solid floor, top surface"
+      },
+      "floor_top_1": {
+        "x": 16,
+        "y": 0,
+        "w": 16,
+        "h": 16,
+        "role": "solid floor, top surface"
+      },
+      "floor_top_2": {
+        "x": 32,
+        "y": 0,
+        "w": 16,
+        "h": 16,
+        "role": "solid floor, top surface"
+      },
+      "floor_edge_left": {
+        "x": 48,
+        "y": 0,
+        "w": 16,
+        "h": 16,
+        "role": "solid floor exposed left edge"
+      },
+      "floor_edge_right": {
+        "x": 64,
+        "y": 0,
+        "w": 16,
+        "h": 16,
+        "role": "solid floor exposed right edge"
+      },
+      "platform_left": {
+        "x": 80,
+        "y": 0,
+        "w": 16,
+        "h": 16,
+        "role": "one-way platform left end; top y=3"
+      },
+      "platform_mid": {
+        "x": 96,
+        "y": 0,
+        "w": 16,
+        "h": 16,
+        "role": "one-way platform repeat; top y=3"
+      },
+      "platform_right": {
+        "x": 112,
+        "y": 0,
+        "w": 16,
+        "h": 16,
+        "role": "one-way platform right end; top y=3"
+      },
+      "stone_0": {
+        "x": 0,
+        "y": 16,
+        "w": 16,
+        "h": 16,
+        "role": "solid masonry fill"
+      },
+      "stone_1": {
+        "x": 16,
+        "y": 16,
+        "w": 16,
+        "h": 16,
+        "role": "solid masonry fill"
+      },
+      "stone_2": {
+        "x": 32,
+        "y": 16,
+        "w": 16,
+        "h": 16,
+        "role": "solid masonry fill"
+      },
+      "spikes": {
+        "x": 48,
+        "y": 16,
+        "w": 16,
+        "h": 16,
+        "role": "hazard, points upward"
+      },
+      "crate": {
+        "x": 64,
+        "y": 16,
+        "w": 16,
+        "h": 16,
+        "role": "breakable crate"
+      },
+      "torch": {
+        "x": 80,
+        "y": 16,
+        "w": 16,
+        "h": 16,
+        "role": "decorative torch; flame included"
+      },
+      "rubble": {
+        "x": 96,
+        "y": 16,
+        "w": 16,
+        "h": 16,
+        "role": "decorative rubble, bottom aligned"
+      },
+      "grate": {
+        "x": 112,
+        "y": 16,
+        "w": 16,
+        "h": 16,
+        "role": "masonry fill with barred inset"
+      },
+      "stone_ornament": {
+        "x": 0,
+        "y": 32,
+        "w": 16,
+        "h": 16,
+        "role": "masonry inset ornament"
+      },
+      "ceiling": {
+        "x": 16,
+        "y": 32,
+        "w": 16,
+        "h": 16,
+        "role": "solid ceiling lower edge"
+      }
+    }
+  },
+  "decorations": {
+    "banner.png": {
+      "width": 40,
+      "height": 96,
+      "anchor": "top-center"
+    }
+  },
+  "usage": "Draw parallax with horizontal modulo at native width 1024 (2048px at 2x). Use imageSmoothingEnabled=false. Atlas tile source coordinates are native pixels. Far alpha is fully opaque; other layers have alpha. Use a dark #07111b clear color. No blur or interpolation required."
+}

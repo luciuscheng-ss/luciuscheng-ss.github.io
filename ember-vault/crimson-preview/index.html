@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#10171d">
+  <title>骑士动作样片 · 余烬地牢</title>
+  <link rel="stylesheet" href="./preview.css">
+</head>
+<body>
+  <main>
+    <header><div><p class="eyebrow">EMBER VAULT · CHARACTER STUDY</p><h1>骑士动作样片</h1></div><a class="back" href="../">返回游戏 <span aria-hidden="true">↗</span></a></header>
+    <div class="workspace">
+      <nav class="clips" aria-label="选择动作">
+        <button data-clip="idle" aria-pressed="true"><span>01</span>待机</button>
+        <button data-clip="run" aria-pressed="false"><span>02</span>跑步</button>
+        <button data-clip="sprint" aria-pressed="false"><span>03</span>急速跑</button>
+        <button data-clip="heavy" aria-pressed="false"><span>04</span>重击连段</button>
+      </nav>
+      <div class="stage">
+        <canvas id="preview" width="1120" height="490" aria-label="左侧为游戏场景中的角色，右侧放大展示相同动作"></canvas>
+        <div class="view-label game-label"><i></i>游戏尺寸<span>约 90 像素高</span></div>
+        <div class="view-label detail-label">细节视图<span>放大检查完整动作</span></div>
+        <div class="loading" id="loading" role="status"><p id="loadMessage">正在载入骑士与动作…</p><button id="retry" hidden>重新载入</button></div>
+      </div>
+      <div class="transport">
+        <div class="buttons"><button id="play" aria-label="暂停播放">暂停</button><button id="previous" aria-label="上一帧">← 上一帧</button><button id="next" aria-label="下一帧">下一帧 →</button></div>
+        <div class="options"><label>播放速度<select id="speed"><option value="1">正常</option><option value="0.5">半速</option><option value="0.25">四分之一速</option></select></label><button id="flip">转向</button><button id="backdrop" aria-pressed="true">地牢背景</button></div>
+      </div>
+      <div class="timeline"><label for="scrub">逐帧检查</label><input id="scrub" type="range" min="0" max="1" step="1" value="0" aria-label="动作帧"><output id="counter">— / —</output></div>
+    </div>
+    <footer><p>观察落脚、重心转移，以及挥剑前后的蓄力与收势。空格播放 / 暂停，方向键逐帧。</p><p class="credits">角色：<a href="https://www.fab.com/listings/1fc0baa6-fc4f-487b-92e2-0d369709d819" target="_blank" rel="noopener">PolyReady · Crimson Knight</a><span> / </span>动作：<a href="https://quaternius.com/packs/universalanimationlibrary.html" target="_blank" rel="noopener">Quaternius & Gonzalo Furnier</a></p></footer>
+  </main>
+  <script type="module" src="./preview.js"></script>
+</body>
+</html>

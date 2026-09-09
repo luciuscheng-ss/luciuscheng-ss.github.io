@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lucius Cheng · 小工具箱</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧰</text></svg>">
+<meta name="theme-color" content="#f2f0e5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#192329" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/svg+xml" href="assets/site/favicon.svg">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="assets/knight-game/game.css">
 <script type="module" src="assets/knight-game/game.mjs"></script>
@@ -13,11 +15,12 @@
 
 <header class="hero">
   <div class="hero-inner">
-    <div class="avatar" aria-hidden="true">🧰</div>
+    <div class="avatar" aria-hidden="true"><svg class="pixel-icon" focusable="false"><use href="assets/site/pixel-icons.svg#toolbox"></use></svg></div>
     <h1>小工具箱</h1>
+    <p class="tagline">实用的小工具，和一位守在页脚的小骑士。</p>
     <div class="hero-links">
       <a href="https://github.com/luciuscheng-ss" target="_blank" rel="noopener">GitHub</a>
-      <button id="copyLinkBtn" class="link-btn">🔗 复制链接</button>
+      <button id="copyLinkBtn" class="link-btn" type="button"><svg class="pixel-icon" aria-hidden="true" focusable="false"><use href="assets/site/pixel-icons.svg#link"></use></svg><span data-copy-label>复制链接</span></button>
     </div>
   </div>
 </header>
@@ -26,7 +29,7 @@
   <section class="tools">
 
     <article class="card">
-      <div class="card-icon">📍</div>
+      <div class="card-icon" aria-hidden="true"><svg class="pixel-icon" focusable="false"><use href="assets/site/pixel-icons.svg#pin"></use></svg></div>
       <h2>iPhone 定位控制台</h2>
       <p class="card-desc">
         Windows 桌面小工具：用数据线连上 iPhone 后，在地图上点一下就能把手机定位
@@ -48,7 +51,7 @@
     </article>
 
     <article class="card">
-      <div class="card-icon">📱</div>
+      <div class="card-icon" aria-hidden="true"><svg class="pixel-icon" focusable="false"><use href="assets/site/pixel-icons.svg#phone"></use></svg></div>
       <h2>安卓无线投屏助手</h2>
       <p class="card-desc">
         一键把安卓手机切到无线 ADB 并启动
@@ -69,7 +72,7 @@
     </article>
 
     <article class="card">
-      <div class="card-icon">📄</div>
+      <div class="card-icon" aria-hidden="true"><svg class="pixel-icon" focusable="false"><use href="assets/site/pixel-icons.svg#document"></use></svg></div>
       <h2>Word 文档格式化助手</h2>
       <p class="card-desc">
         两个功能：① 复制内置的提示词模板发给豆包（或其他 AI），把它的回复整段
@@ -92,7 +95,7 @@
     </article>
 
     <article class="card">
-      <div class="card-icon" aria-hidden="true">🗼</div>
+      <div class="card-icon" aria-hidden="true"><svg class="pixel-icon" focusable="false"><use href="assets/site/pixel-icons.svg#tower"></use></svg></div>
       <h2>埃菲尔铁塔 · 3D 光影</h2>
       <p class="card-desc">
         旋转、缩放查看镂空铁塔，切换日光、黄昏和夜景。
@@ -118,7 +121,7 @@
 <aside id="homepage-guard" class="homepage-guard" aria-label="像素小骑士" hidden>
   <canvas class="guard-canvas" aria-hidden="true"></canvas>
   <div class="guard-hud">
-    <span class="guard-mark" aria-hidden="true">✦</span>
+    <span class="guard-mark" aria-hidden="true"><svg class="pixel-icon" focusable="false"><use href="assets/site/pixel-icons.svg#spark"></use></svg></span>
     <div class="guard-info">
       <span class="guard-name">小小守卫 <span class="guard-count">0 / 10</span></span>
       <span class="guard-hint">点击空白处，召唤小怪</span>
@@ -130,13 +133,14 @@
 </aside>
 
 <script>
+let copyResetTimer;
 document.getElementById("copyLinkBtn").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(location.href);
-    const btn = document.getElementById("copyLinkBtn");
-    const original = btn.textContent;
-    btn.textContent = "已复制 ✓";
-    setTimeout(() => { btn.textContent = original; }, 1500);
+    const label = document.querySelector("[data-copy-label]");
+    clearTimeout(copyResetTimer);
+    label.textContent = "已复制";
+    copyResetTimer = setTimeout(() => { label.textContent = "复制链接"; }, 1500);
   } catch (e) {
     prompt("复制失败，请手动复制这个链接：", location.href);
   }

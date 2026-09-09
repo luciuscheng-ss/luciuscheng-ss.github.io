@@ -6,6 +6,8 @@
 <title>Lucius Cheng · 小工具箱</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧰</text></svg>">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="assets/knight-game/game.css">
+<script type="module" src="assets/knight-game/game.mjs"></script>
 </head>
 <body>
 
@@ -112,6 +114,20 @@
 <footer>
   <p>页面内容仅供个人分享使用，工具按“现状”提供，使用前请自行阅读源码。</p>
 </footer>
+
+<aside id="homepage-guard" class="homepage-guard" aria-label="像素小骑士" hidden>
+  <canvas class="guard-canvas" aria-hidden="true"></canvas>
+  <div class="guard-hud">
+    <span class="guard-mark" aria-hidden="true">✦</span>
+    <div class="guard-info">
+      <span class="guard-name">小小守卫 <span class="guard-count">0 / 10</span></span>
+      <span class="guard-hint">点击空白处，召唤小怪</span>
+    </div>
+    <span class="guard-charge" aria-hidden="true"></span>
+    <button class="guard-toggle" type="button" aria-pressed="true" aria-label="关闭像素小游戏">收起</button>
+  </div>
+  <span class="guard-announcement" role="status" aria-live="polite"></span>
+</aside>
 
 <script>
 document.getElementById("copyLinkBtn").addEventListener("click", async () => {
